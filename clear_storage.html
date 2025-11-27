@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Storage</title>
+</head>
+<body>
+    <h1>清除本地存储</h1>
+    <button onclick="clearStorage()">点击清除</button>
+    <p id="status"></p>
+    
+    <script>
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('status').innerText = '✅ 已清除！请刷新主页面。';
+            console.log('LocalStorage cleared!');
+        }
+        
+        // 显示当前存储的内容
+        console.log('Current localStorage:', {...localStorage});
+        document.getElementById('status').innerText = 'localStorage 项: ' + localStorage.length;
+    </script>
+</body>
+</html>
