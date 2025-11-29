@@ -920,30 +920,47 @@ export async function generateCreatureOffline(
       const variantDesc = `${description}_${randomSeed}`;
       
       try {
-        images.push(generatePixelCreature(variantDesc, size));
+        const img = generatePixelCreature(variantDesc, size);
+        images.push(img);
+        console.log(`✅ 图片 ${i + 1}/${quantity} 生成成功`);
       } catch (imgError) {
-        console.error('图片生成失败:', imgError);
-        // 即使单个图片失败,也继续生成其他的
+        console.error(`❌ 图片 ${i + 1}/${quantity} 生成失败:`, imgError);
+        // 失败时添加空白占位图片,保证数组长度一致
+        images.push('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
       }
       
       audioPromises.push(generateAudio(variantDesc));
     }
     
     // 等待所有音频加载完成,如果某些失败也不影响其他
-    const audios = await Promise.all(audioPromises.map(p => 
+    const audios = await Promise.all(audioPromises.map((p, index) => 
       p.catch(err => {
-        console.error('音频加载失败:', err);
+        console.error(`❌ 音频 ${index + 1}/${quantity} 加载失败:`, err);
         return 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
       })
     ));
+    
+    // 确保数组长度一致
+    console.log(`📊 生成结果: ${images.length}张图片, ${audios.length}个音频 (请求${quantity}个)`);
     
     if (images.length === 0) {
       throw new Error('所有图片生成失败');
     }
     
+    // 确保图片和音频数量匹配quantity
+    while (images.length < quantity) {
+      console.warn(`⚠️ 补充缺失的图片 (当前${images.length}, 需要${quantity})`);
+      images.push('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+    }
+    
+    while (audios.length < quantity) {
+      console.warn(`⚠️ 补充缺失的音频 (当前${audios.length}, 需要${quantity})`);
+      audios.push('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');
+    }
+    
     return {
       success: true,
-      message: '生成成功!(增强版+真实音频+随机变体)',
+      message: `生成成功! (${images.length}个生物)`,
       images,
       audios,
       prompt: description,
