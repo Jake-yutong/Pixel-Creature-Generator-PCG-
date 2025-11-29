@@ -384,7 +384,8 @@ function drawPixel(ctx: CanvasRenderingContext2D, x: number, y: number, color: s
 function generatePixelCreature(description: string, targetSize: number = 64, aiColors?: string[]): string {
   // 使用更小的画布来创建像素效果,然后放大
   const pixelRes = 32; // 32x32像素分辨率
-  const pixelSize = Math.ceil(targetSize / pixelRes);
+  // 确保每个像素至少8x8实际像素,避免图片太小导致细节丢失
+  const pixelSize = Math.max(8, Math.ceil(targetSize / pixelRes));
   
   const canvas = document.createElement('canvas');
   canvas.width = pixelRes * pixelSize;
