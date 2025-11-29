@@ -35,35 +35,19 @@ export default function App() {
   // 当前会话的收藏标记
   const [favoriteCards, setFavoriteCards] = useState<Set<number>>(new Set());
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<string[]>(() => {
-    // 从 localStorage 加载生成的图片
-    const saved = localStorage.getItem('generatedImages');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [generatedAudios, setGeneratedAudios] = useState<string[]>(() => {
-    // 从 localStorage 加载生成的音频
-    const saved = localStorage.getItem('generatedAudios');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // 每次打开页面时,不恢复上次的生成结果,保持干净的初始状态
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [generatedAudios, setGeneratedAudios] = useState<string[]>([]);
   const [userInput, setUserInput] = useState<string>(''); // 存储用户输入
   const [lastPixelSize, setLastPixelSize] = useState<string>('32px'); // 存储上次的像素大小
   const [lastQuantity, setLastQuantity] = useState<number>(4); // 存储上次的生成数量
   const [currentPage, setCurrentPage] = useState(0); // 当前页码（0或1）
 
-  // 保存收藏数据到 localStorage
+  // 保存收藏数据到 localStorage (收藏是持久化的,但生成结果不持久化)
   useEffect(() => {
     console.log('💾 保存收藏数据到 localStorage:', favoritesData.length, '个');
     localStorage.setItem('favoritesData', JSON.stringify(favoritesData));
   }, [favoritesData]);
-
-  // 保存生成的图片和音频到 localStorage
-  useEffect(() => {
-    localStorage.setItem('generatedImages', JSON.stringify(generatedImages));
-  }, [generatedImages]);
-
-  useEffect(() => {
-    localStorage.setItem('generatedAudios', JSON.stringify(generatedAudios));
-  }, [generatedAudios]);
 
   // 同步当前生成图片的收藏状态（根据 favoritesData）
   useEffect(() => {
