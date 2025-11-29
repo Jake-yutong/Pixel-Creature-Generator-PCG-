@@ -15,9 +15,10 @@ interface AssetCardProps {
   generatedAudio?: string; // 添加音频支持
   isLoading?: boolean;
   onDownload?: () => void;
+  onShare?: () => void; // 添加分享回调
 }
 
-export function AssetCard({ cardNumber, isExpanded = false, onExpand, onClose, theme, isFavorited = false, onToggleFavorite, generatedImage, generatedAudio, isLoading = false, onDownload }: AssetCardProps) {
+export function AssetCard({ cardNumber, isExpanded = false, onExpand, onClose, theme, isFavorited = false, onToggleFavorite, generatedImage, generatedAudio, isLoading = false, onDownload, onShare }: AssetCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
@@ -29,6 +30,14 @@ export function AssetCard({ cardNumber, isExpanded = false, onExpand, onClose, t
     e.stopPropagation();
     if (onDownload) {
       onDownload();
+    }
+  };
+
+  // 分享处理函数
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onShare) {
+      onShare();
     }
   };
 
@@ -226,7 +235,7 @@ export function AssetCard({ cardNumber, isExpanded = false, onExpand, onClose, t
             onMouseLeave={(e) => e.currentTarget.style.color = colors.textTertiary} />
         </button>
         <button 
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleShare}
           className="w-8 h-8 flex items-center justify-center transition-colors"
           style={{ backgroundColor: 'transparent' }}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.buttonHoverBg}

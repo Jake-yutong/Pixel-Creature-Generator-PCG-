@@ -268,6 +268,72 @@ export default function App() {
     }
   };
 
+  // 分享功能
+  const handleShare = async (cardIndex: number) => {
+    const imageData = generatedImages[cardIndex];
+    
+    console.log('🔗 分享按钮被点击', { cardIndex, hasImage: !!imageData });
+    
+    if (!imageData) {
+      alert('没有可分享的图片！');
+      return;
+    }
+
+    try {
+      // 检查浏览器是否支持 Web Share API
+      if (navigator.share && navigator.canShare) {
+        console.log('✅ 浏览器支持 Web Share API');
+        
+        // 将 base64 转换为 Blob
+        const response = await fetch(imageData);
+        const blob = await response.blob();
+        const file = new File([blob], `creature-${cardIndex + 1}.png`, { type: 'image/png' });
+        
+        // 检查是否可以分享文件
+        if (navigator.canShare({ files: [file] })) {
+          console.log('✅ 可以分享文件');
+          await navigator.share({
+            title: '我的像素怪物',
+            text: `看看我生成的像素怪物 #${cardIndex + 1}!`,
+            files: [file]
+          });
+          console.log('✅ 分享成功');
+        } else {
+          console.log('⚠️ 不能分享文件，尝试分享链接');
+          await navigator.share({
+            title: '我的像素怪物',
+            text: `看看我生成的像素怪物 #${cardIndex + 1}!\n访问: ${window.location.href}`,
+            url: window.location.href
+          });
+        }
+      } else {
+        console.log('⚠️ 浏览器不支持 Web Share API，使用剪贴板');
+        // 降级方案：复制链接到剪贴板
+        const shareText = `看看我生成的像素怪物 #${cardIndex + 1}!\n访问: ${window.location.href}`;
+        await navigator.clipboard.writeText(shareText);
+        alert('✅ 链接已复制到剪贴板！\n你可以粘贴分享给朋友。');
+      }
+    } catch (error: any) {
+      console.error('❌ 分享失败:', error);
+      
+      // 如果用户取消分享，不显示错误
+      if (error.name === 'AbortError') {
+        console.log('ℹ️ 用户取消了分享');
+        return;
+      }
+      
+      // 如果分享失败,尝试复制链接
+      try {
+        const shareText = `看看我生成的像素怪物 #${cardIndex + 1}!\n访问: ${window.location.href}`;
+        await navigator.clipboard.writeText(shareText);
+        alert('✅ 链接已复制到剪贴板！\n你可以粘贴分享给朋友。');
+      } catch (clipboardError) {
+        console.error('❌ 复制失败:', clipboardError);
+        alert('❌ 分享失败，请手动复制链接分享。');
+      }
+    }
+  };
+
   const colors = theme === 'dark' ? {
     bg: '#1a1a1a',
     cardBg: '#2a2a2a',
@@ -353,6 +419,7 @@ export default function App() {
               generatedImage={generatedImages[expandedCardIndex]} // 传递对应的图片
               generatedAudio={generatedAudios[expandedCardIndex]} // 传递对应的音频
               onDownload={() => handleDownload(expandedCardIndex)} // 添加下载功能
+              onShare={() => handleShare(expandedCardIndex)} // 添加分享功能
             />
           </div>
 
@@ -397,13 +464,7 @@ export default function App() {
             <div className="flex items-center gap-3">
               <div className="w-2 h-2" style={{ backgroundColor: colors.text }}></div>
               <span className="tracking-wider font-['Inter']" style={{ color: colors.text }}>CREATURE GENERATOR</span>
-              {/* 后端状态显示 */}
-              <span className="text-xs font-['Inter'] ml-4 px-3 py-1 rounded-full" style={{ 
-                backgroundColor: backendStatus.includes('✅') ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                color: backendStatus.includes('✅') ? '#4CAF50' : '#EF4444'
-              }}>
-                {backendStatus}
-              </span>
+              {/* 后端状态显示 - 已隐藏,因为使用前端生成器 */}
             </div>
             
             <div className="flex items-center gap-4">
@@ -523,6 +584,7 @@ export default function App() {
                 generatedAudio={generatedAudios.length > 0 ? generatedAudios[0] : undefined}
                 isLoading={isGenerating && lastQuantity >= 1}
                 onDownload={() => handleDownload(0)}
+                onShare={() => handleShare(0)}
               />
               <AssetCard 
                 cardNumber={2}
@@ -536,6 +598,7 @@ export default function App() {
                 generatedAudio={generatedAudios.length > 1 ? generatedAudios[1] : undefined}
                 isLoading={isGenerating && lastQuantity >= 2}
                 onDownload={() => handleDownload(1)}
+                onShare={() => handleShare(1)}
               />
               <AssetCard 
                 cardNumber={3}
@@ -549,6 +612,7 @@ export default function App() {
                 generatedAudio={generatedAudios.length > 2 ? generatedAudios[2] : undefined}
                 isLoading={isGenerating && lastQuantity >= 3}
                 onDownload={() => handleDownload(2)}
+                onShare={() => handleShare(2)}
               />
               <AssetCard 
                 cardNumber={4}
@@ -562,6 +626,7 @@ export default function App() {
                 generatedAudio={generatedAudios.length > 3 ? generatedAudios[3] : undefined}
                 isLoading={isGenerating && lastQuantity >= 4}
                 onDownload={() => handleDownload(3)}
+                onShare={() => handleShare(3)}
               />
             </div>
           </div>

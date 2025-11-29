@@ -5,6 +5,7 @@ import base64
 import random
 import hashlib
 import time
+import os
 from PIL import Image, ImageDraw
 import requests
 import numpy as np

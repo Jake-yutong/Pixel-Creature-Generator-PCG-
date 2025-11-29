@@ -1,4 +1,5 @@
 // API 服务 - 连接前端和后端
+import { generateCreatureOffline } from './fakeGenerator';
 
 // 🔧 部署配置：从环境变量读取，或使用默认值
 // 在 Netlify 上设置环境变量 VITE_API_URL
@@ -26,8 +27,9 @@ export async function generateCreature(description: string, pixelSize?: string, 
     // 返回数据，让调用者处理 success 字段
     return data;
   } catch (error) {
-    console.error('❌ 调用后端失败:', error);
-    throw error;
+    console.error('❌ 调用后端失败，切换到纯前端生成器:', error);
+    // 后端不可用时，使用纯前端生成器
+    return await generateCreatureOffline(description, pixelSize || '32px', quantity || 4);
   }
 }
 
