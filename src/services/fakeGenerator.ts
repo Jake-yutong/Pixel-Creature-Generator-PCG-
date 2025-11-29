@@ -957,16 +957,16 @@ export async function generateCreatureOffline(
       if (!aiColors) {
         // 为每个变体生成独特的随机配色方案
         const hue = (i * 90 + Math.floor(Math.random() * 60)) % 360; // 每个变体相隔90度色相
-        const saturation = 60 + Math.floor(Math.random() * 30);
-        const lightness = 45 + Math.floor(Math.random() * 20);
+        const saturation = 65 + Math.floor(Math.random() * 20); // 65-85%
+        const baseLightness = 50 + Math.floor(Math.random() * 10); // 50-60%
         variantColors = [
-          `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-          `hsl(${hue}, ${saturation + 10}%, ${lightness - 20}%)`,
-          `hsl(${hue}, ${saturation + 15}%, ${lightness + 25}%)`,
-          `hsl(${(hue + 30) % 360}, ${saturation}%, ${lightness + 10}%)`,
-          `hsl(${hue}, ${saturation}%, 15%)`
+          `hsl(${hue}, ${saturation}%, ${baseLightness}%)`,           // main - 中等亮度
+          `hsl(${hue}, ${Math.min(saturation + 15, 95)}%, ${Math.max(baseLightness - 25, 25)}%)`, // dark - 更暗
+          `hsl(${hue}, ${Math.max(saturation - 10, 50)}%, ${Math.min(baseLightness + 25, 85)}%)`, // light - 更亮
+          `hsl(${(hue + 30) % 360}, ${saturation}%, ${baseLightness + 5}%)`, // accent - 稍微偏色
+          `hsl(${hue}, ${saturation}%, 15%)`                          // outline - 很暗
         ];
-        console.log(`🎨 变体${i + 1}随机配色: 色相${hue}°`);
+        console.log(`🎨 变体${i + 1}随机配色: 色相${hue}°, 饱和度${saturation}%, 基础亮度${baseLightness}%`);
       }
       
       try {
