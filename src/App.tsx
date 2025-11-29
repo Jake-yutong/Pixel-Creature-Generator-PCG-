@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
 import { Settings, Heart } from "lucide-react";
-import { generateCreatureOffline } from "./services/fakeGenerator";
+import { generateCreatureHybrid } from "./services/hybridGenerator";
 
 export type Theme = 'dark' | 'light';
 
@@ -101,8 +101,8 @@ export default function App() {
     try {
       console.log('🎨 开始生成怪物变体:', description, '像素大小:', pixelSize, '数量:', quantity);
       
-      // 使用纯前端生成器
-      const result = await generateCreatureOffline(description, pixelSize, quantity);
+      // 使用混合生成器(AI优先,本地保底)
+      const result = await generateCreatureHybrid(description, pixelSize, quantity);
       
       if (result.success && result.images) {
         console.log('📦 收到的数据:', result);
