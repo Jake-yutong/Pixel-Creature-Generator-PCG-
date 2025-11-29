@@ -345,50 +345,314 @@ function drawAccessories(ctx: CanvasRenderingContext2D, x: number, y: number, si
   }
 }
 
-// 生成像素生物图像 - 增强版
-function generatePixelCreature(description: string, size: number = 64): string {
+// 像素艺术绘制函数 - 真正的像素化
+function drawPixel(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, pixelSize: number) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.floor(x), Math.floor(y), pixelSize, pixelSize);
+}
+
+// 生成像素生物图像 - 真正的像素艺术版
+function generatePixelCreature(description: string, targetSize: number = 64): string {
+  // 使用更小的画布来创建像素效果,然后放大
+  const pixelRes = 32; // 32x32像素分辨率
+  const pixelSize = Math.ceil(targetSize / pixelRes);
+  
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = pixelRes * pixelSize;
+  canvas.height = pixelRes * pixelSize;
   const ctx = canvas.getContext('2d')!;
   
-  ctx.clearRect(0, 0, size, size);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingEnabled = false;
   
   const seed = simpleHash(description);
   const palette = getColorPalette(description, seed);
   const rand = (offset: number) => (seed + offset) % 100;
   
   // 根据描述和随机数选择形状类型
-  const shapeType = rand(10) % 4; // 0=圆形/史莱姆, 1=腿状/蜘蛛, 2=漂浮/幽灵, 3=翅膀/蝙蝠
+  const shapeType = rand(10) % 4;
   
-  const centerX = size / 2;
-  const centerY = size / 2;
+  // 创建像素数据数组 (32x32)
+  const pixels: string[][] = Array(pixelRes).fill(null).map(() => Array(pixelRes).fill('transparent'));
   
-  // 禁用抗锯齿,保持像素风格
-  ctx.imageSmoothingEnabled = false;
+  const centerX = Math.floor(pixelRes / 2);
+  const centerY = Math.floor(pixelRes / 2);
   
-  // ===== 绘制身体 =====
+  // 根据类型绘制不同的像素怪物
   if (shapeType === 0) {
-    // 圆形史莱姆型
-    drawSlimeBody(ctx, centerX, centerY, size * 0.38, palette, seed);
+    // 史莱姆型 - 圆润可爱
+    drawPixelSlime(pixels, centerX, centerY, palette, rand);
   } else if (shapeType === 1) {
-    // 腿状蘑菇/蜘蛛型
-    drawLeggedBody(ctx, centerX, centerY - size * 0.05, size * 0.32, palette, seed);
+    // 蘑菇/蜘蛛型 - 带腿
+    drawPixelMushroom(pixels, centerX, centerY, palette, rand);
   } else if (shapeType === 2) {
-    // 漂浮幽灵型
-    drawFloatingBody(ctx, centerX, centerY, size * 0.35, palette, seed);
+    // 幽灵型 - 漂浮
+    drawPixelGhost(pixels, centerX, centerY, palette, rand);
   } else {
-    // 翅膀恶魔/蝙蝠型
-    drawWingedBody(ctx, centerX, centerY, size * 0.3, palette, seed);
+    // 恶魔/蝙蝠型 - 带翅膀
+    drawPixelDemon(pixels, centerX, centerY, palette, rand);
   }
   
-  // ===== 绘制装饰 =====
-  drawAccessories(ctx, centerX, centerY, size, palette, seed, shapeType);
-  
-  // ===== 绘制眼睛(最后画,在最上层) =====
-  drawEyes(ctx, centerX, centerY - size * 0.1, size * 0.15, palette, seed);
+  // 将像素数组绘制到画布
+  for (let y = 0; y < pixelRes; y++) {
+    for (let x = 0; x < pixelRes; x++) {
+      if (pixels[y][x] !== 'transparent') {
+        drawPixel(ctx, x * pixelSize, y * pixelSize, pixels[y][x], pixelSize);
+      }
+    }
+  }
   
   return canvas.toDataURL();
+}
+
+// 绘制像素史莱姆
+function drawPixelSlime(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  const size = 10;
+  
+  // 底部阴影 (椭圆形)
+  for (let y = -3; y <= 3; y++) {
+    for (let x = -6; x <= 6; x++) {
+      if (x * x / 36 + y * y / 9 < 1) {
+        setPixel(pixels, cx + x, cy + size - 3 + y, palette.outline);
+      }
+    }
+  }
+  
+  // 主体 (圆形)
+  for (let y = -size; y <= size; y++) {
+    for (let x = -size; x <= size; x++) {
+      const dist = Math.sqrt(x * x + y * y);
+      if (dist < size) {
+        if (dist < size - 2) {
+          setPixel(pixels, cx + x, cy + y, palette.main);
+        } else {
+          setPixel(pixels, cx + x, cy + y, palette.dark);
+        }
+      }
+    }
+  }
+  
+  // 底部阴影层
+  for (let y = size / 2; y <= size; y++) {
+    for (let x = -size + 2; x <= size - 2; x++) {
+      if (Math.sqrt(x * x + (y - size / 2) * (y - size / 2)) < size / 2) {
+        setPixel(pixels, cx + x, cy + y, palette.dark);
+      }
+    }
+  }
+  
+  // 高光
+  for (let y = -size + 2; y <= -size + 5; y++) {
+    for (let x = -size + 2; x <= -size + 5; x++) {
+      if (Math.sqrt((x + size - 3) * (x + size - 3) + (y + size - 3) * (y + size - 3)) < 2) {
+        setPixel(pixels, cx + x, cy + y, palette.light);
+      }
+    }
+  }
+  
+  // 眼睛
+  drawPixelEyes(pixels, cx, cy - 2, palette, rand);
+  
+  // 嘴巴
+  for (let x = -2; x <= 2; x++) {
+    setPixel(pixels, cx + x, cy + 4, palette.outline);
+  }
+}
+
+// 绘制像素蘑菇
+function drawPixelMushroom(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  // 腿部
+  for (let i = 0; i < 4; i++) {
+    const legX = cx + (i - 1.5) * 3;
+    for (let y = cy + 5; y < cy + 12; y++) {
+      setPixel(pixels, legX, y, palette.dark);
+    }
+  }
+  
+  // 头部轮廓
+  for (let y = -8; y <= 4; y++) {
+    for (let x = -8; x <= 8; x++) {
+      const dist = Math.sqrt(x * x + y * y);
+      if (dist < 9 && dist > 7.5) {
+        setPixel(pixels, cx + x, cy + y, palette.outline);
+      }
+    }
+  }
+  
+  // 头部主体
+  for (let y = -7; y <= 3; y++) {
+    for (let x = -7; x <= 7; x++) {
+      if (Math.sqrt(x * x + y * y) < 7.5) {
+        setPixel(pixels, cx + x, cy + y, palette.main);
+      }
+    }
+  }
+  
+  // 斑点装饰
+  const spots = [[0, -4], [-4, -2], [4, -2], [-2, 1], [2, 1]];
+  for (const [sx, sy] of spots) {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (Math.abs(dx) + Math.abs(dy) < 2) {
+          setPixel(pixels, cx + sx + dx, cy + sy + dy, palette.light);
+        }
+      }
+    }
+  }
+  
+  // 眼睛
+  drawPixelEyes(pixels, cx, cy, palette, rand);
+}
+
+// 绘制像素幽灵
+function drawPixelGhost(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  // 头部
+  for (let y = -8; y <= 2; y++) {
+    for (let x = -6; x <= 6; x++) {
+      const dist = Math.sqrt(x * x + Math.max(0, y) * Math.max(0, y));
+      if (dist < 7) {
+        setPixel(pixels, cx + x, cy + y, y < 0 ? palette.main : palette.main);
+      }
+    }
+  }
+  
+  // 波浪底部
+  for (let x = -6; x <= 6; x++) {
+    const wave = Math.sin(x * 0.8) * 2;
+    for (let y = 2; y < 2 + wave + 4; y++) {
+      setPixel(pixels, cx + x, cy + y, palette.main);
+    }
+  }
+  
+  // 半透明效果 (用浅色模拟)
+  for (let y = -6; y <= -2; y++) {
+    for (let x = -4; x <= 0; x++) {
+      if (Math.sqrt(x * x + y * y) < 4) {
+        setPixel(pixels, cx + x, cy + y, palette.light);
+      }
+    }
+  }
+  
+  // 轮廓
+  for (let y = -8; y <= 8; y++) {
+    for (let x = -6; x <= 6; x++) {
+      if (getPixel(pixels, cx + x, cy + y) === palette.main || getPixel(pixels, cx + x, cy + y) === palette.light) {
+        // 检查周围是否有透明像素
+        if (getPixel(pixels, cx + x + 1, cy + y) === 'transparent' ||
+            getPixel(pixels, cx + x - 1, cy + y) === 'transparent' ||
+            getPixel(pixels, cx + x, cy + y + 1) === 'transparent' ||
+            getPixel(pixels, cx + x, cy + y - 1) === 'transparent') {
+          if (getPixel(pixels, cx + x, cy + y) !== palette.light) {
+            setPixel(pixels, cx + x, cy + y, palette.dark);
+          }
+        }
+      }
+    }
+  }
+  
+  // 眼睛
+  drawPixelEyes(pixels, cx, cy - 2, palette, rand);
+}
+
+// 绘制像素恶魔
+function drawPixelDemon(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  // 翅膀 (左)
+  for (let y = -4; y <= 4; y++) {
+    for (let x = -12; x <= -8; x++) {
+      const dist = Math.sqrt((x + 10) * (x + 10) + y * y);
+      if (dist < 4) {
+        setPixel(pixels, cx + x, cy + y, palette.dark);
+      }
+    }
+  }
+  
+  // 翅膀 (右)
+  for (let y = -4; y <= 4; y++) {
+    for (let x = 8; x <= 12; x++) {
+      const dist = Math.sqrt((x - 10) * (x - 10) + y * y);
+      if (dist < 4) {
+        setPixel(pixels, cx + x, cy + y, palette.dark);
+      }
+    }
+  }
+  
+  // 身体
+  for (let y = -6; y <= 6; y++) {
+    for (let x = -6; x <= 6; x++) {
+      if (Math.sqrt(x * x + y * y) < 6) {
+        setPixel(pixels, cx + x, cy + y, palette.main);
+      }
+    }
+  }
+  
+  // 角 (左)
+  for (let y = -10; y <= -6; y++) {
+    for (let x = -4; x <= -2; x++) {
+      setPixel(pixels, cx + x, cy + y, palette.accent);
+    }
+  }
+  
+  // 角 (右)
+  for (let y = -10; y <= -6; y++) {
+    for (let x = 2; x <= 4; x++) {
+      setPixel(pixels, cx + x, cy + y, palette.accent);
+    }
+  }
+  
+  // 阴影
+  for (let y = 2; y <= 5; y++) {
+    for (let x = -5; x <= 5; x++) {
+      if (Math.sqrt(x * x + (y - 3) * (y - 3)) < 4) {
+        setPixel(pixels, cx + x, cy + y, palette.dark);
+      }
+    }
+  }
+  
+  // 眼睛
+  drawPixelEyes(pixels, cx, cy - 1, palette, rand);
+}
+
+// 绘制像素眼睛
+function drawPixelEyes(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  const eyeSpacing = 4;
+  
+  // 左眼白
+  for (let y = -1; y <= 1; y++) {
+    for (let x = -1; x <= 1; x++) {
+      setPixel(pixels, cx - eyeSpacing + x, cy + y, palette.white);
+    }
+  }
+  
+  // 右眼白
+  for (let y = -1; y <= 1; y++) {
+    for (let x = -1; x <= 1; x++) {
+      setPixel(pixels, cx + eyeSpacing + x, cy + y, palette.white);
+    }
+  }
+  
+  // 左瞳孔
+  setPixel(pixels, cx - eyeSpacing, cy, palette.black);
+  
+  // 右瞳孔
+  setPixel(pixels, cx + eyeSpacing, cy, palette.black);
+  
+  // 眼睛高光
+  setPixel(pixels, cx - eyeSpacing - 1, cy - 1, palette.eyeHighlight);
+  setPixel(pixels, cx + eyeSpacing - 1, cy - 1, palette.eyeHighlight);
+}
+
+// 辅助函数
+function setPixel(pixels: string[][], x: number, y: number, color: string) {
+  if (y >= 0 && y < pixels.length && x >= 0 && x < pixels[0].length) {
+    pixels[y][x] = color;
+  }
+}
+
+function getPixel(pixels: string[][], x: number, y: number): string {
+  if (y >= 0 && y < pixels.length && x >= 0 && x < pixels[0].length) {
+    return pixels[y][x];
+  }
+  return 'transparent';
 }
 
 // 音频文件库 - 根据关键词匹配
