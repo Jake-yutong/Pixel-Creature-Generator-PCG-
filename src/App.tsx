@@ -558,68 +558,35 @@ export default function App() {
             />
           </div>
 
-          {/* Right Column - Preview Area with 2x2 Grid */}
+          {/* Right Column - Preview Area with Dynamic Grid */}
           <div 
             className="rounded-3xl p-8 backdrop-blur-xl" 
             style={{ backgroundColor: theme === 'dark' ? 'rgba(42, 42, 42, 0.4)' : 'rgba(255, 255, 255, 0.5)' }}
           >
-            <div className="grid grid-cols-2 gap-6 animate-fadeIn">
-              <AssetCard 
-                cardNumber={1}
-                isExpanded={false}
-                onExpand={() => setExpandedCardIndex(0)}
-                onClose={() => setExpandedCardIndex(null)}
-                theme={theme}
-                isFavorited={favoriteCards.has(1)}
-                onToggleFavorite={() => toggleFavorite(1)}
-                generatedImage={generatedImages.length > 0 ? generatedImages[0] : undefined}
-                generatedAudio={generatedAudios.length > 0 ? generatedAudios[0] : undefined}
-                isLoading={isGenerating && lastQuantity >= 1}
-                onDownload={() => handleDownload(0)}
-                onShare={() => handleShare(0)}
-              />
-              <AssetCard 
-                cardNumber={2}
-                isExpanded={false}
-                onExpand={() => setExpandedCardIndex(1)}
-                onClose={() => setExpandedCardIndex(null)}
-                theme={theme}
-                isFavorited={favoriteCards.has(2)}
-                onToggleFavorite={() => toggleFavorite(2)}
-                generatedImage={generatedImages.length > 1 ? generatedImages[1] : undefined}
-                generatedAudio={generatedAudios.length > 1 ? generatedAudios[1] : undefined}
-                isLoading={isGenerating && lastQuantity >= 2}
-                onDownload={() => handleDownload(1)}
-                onShare={() => handleShare(1)}
-              />
-              <AssetCard 
-                cardNumber={3}
-                isExpanded={false}
-                onExpand={() => setExpandedCardIndex(2)}
-                onClose={() => setExpandedCardIndex(null)}
-                theme={theme}
-                isFavorited={favoriteCards.has(3)}
-                onToggleFavorite={() => toggleFavorite(3)}
-                generatedImage={generatedImages.length > 2 ? generatedImages[2] : undefined}
-                generatedAudio={generatedAudios.length > 2 ? generatedAudios[2] : undefined}
-                isLoading={isGenerating && lastQuantity >= 3}
-                onDownload={() => handleDownload(2)}
-                onShare={() => handleShare(2)}
-              />
-              <AssetCard 
-                cardNumber={4}
-                isExpanded={false}
-                onExpand={() => setExpandedCardIndex(3)}
-                onClose={() => setExpandedCardIndex(null)}
-                theme={theme}
-                isFavorited={favoriteCards.has(4)}
-                onToggleFavorite={() => toggleFavorite(4)}
-                generatedImage={generatedImages.length > 3 ? generatedImages[3] : undefined}
-                generatedAudio={generatedAudios.length > 3 ? generatedAudios[3] : undefined}
-                isLoading={isGenerating && lastQuantity >= 4}
-                onDownload={() => handleDownload(3)}
-                onShare={() => handleShare(3)}
-              />
+            <div 
+              className={`grid gap-6 animate-fadeIn ${
+                lastQuantity === 1 ? 'grid-cols-1 max-w-md mx-auto' : 
+                lastQuantity === 2 ? 'grid-cols-2' : 
+                'grid-cols-2'
+              }`}
+            >
+              {Array.from({ length: Math.max(lastQuantity, generatedImages.length) }).map((_, index) => (
+                <AssetCard 
+                  key={index}
+                  cardNumber={index + 1}
+                  isExpanded={false}
+                  onExpand={() => setExpandedCardIndex(index)}
+                  onClose={() => setExpandedCardIndex(null)}
+                  theme={theme}
+                  isFavorited={favoriteCards.has(index + 1)}
+                  onToggleFavorite={() => toggleFavorite(index + 1)}
+                  generatedImage={generatedImages.length > index ? generatedImages[index] : undefined}
+                  generatedAudio={generatedAudios.length > index ? generatedAudios[index] : undefined}
+                  isLoading={isGenerating && lastQuantity > index}
+                  onDownload={() => handleDownload(index)}
+                  onShare={() => handleShare(index)}
+                />
+              ))}
             </div>
           </div>
           
