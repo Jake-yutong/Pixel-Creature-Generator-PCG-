@@ -908,28 +908,56 @@ export async function generateCreatureOffline(
 ): Promise<any> {
   console.log('🎨 使用增强版前端生成器(真实音频+随机性):', description);
   
-  const images: string[] = [];
-  const audioPromises: Promise<string>[] = [];
-  
-  const size = parseInt(pixelSize.replace('px', ''));
-  
-  for (let i = 0; i < quantity; i++) {
-    // 为每个变体添加随机时间戳和索引,确保每次都不同
-    const randomSeed = Date.now() + Math.random() * 10000 + i * 1000;
-    const variantDesc = `${description}_${randomSeed}`;
-    images.push(generatePixelCreature(variantDesc, size));
-    audioPromises.push(generateAudio(variantDesc));
+  try {
+    const images: string[] = [];
+    const audioPromises: Promise<string>[] = [];
+    
+    const size = parseInt(pixelSize.replace('px', ''));
+    
+    for (let i = 0; i < quantity; i++) {
+      // 为每个变体添加随机时间戳和索引,确保每次都不同
+      const randomSeed = Date.now() + Math.random() * 10000 + i * 1000;
+      const variantDesc = `${description}_${randomSeed}`;
+      
+      try {
+        images.push(generatePixelCreature(variantDesc, size));
+      } catch (imgError) {
+        console.error('图片生成失败:', imgError);
+        // 即使单个图片失败,也继续生成其他的
+      }
+      
+      audioPromises.push(generateAudio(variantDesc));
+    }
+    
+    // 等待所有音频加载完成,如果某些失败也不影响其他
+    const audios = await Promise.all(audioPromises.map(p => 
+      p.catch(err => {
+        console.error('音频加载失败:', err);
+        return 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+      })
+    ));
+    
+    if (images.length === 0) {
+      throw new Error('所有图片生成失败');
+    }
+    
+    return {
+      success: true,
+      message: '生成成功!(增强版+真实音频+随机变体)',
+      images,
+      audios,
+      prompt: description,
+      method: 'Enhanced Frontend Generator with Real Audio & Randomization'
+    };
+  } catch (error) {
+    console.error('生成器错误:', error);
+    return {
+      success: false,
+      message: '生成失败: ' + (error instanceof Error ? error.message : '未知错误'),
+      images: [],
+      audios: [],
+      prompt: description,
+      method: 'Enhanced Frontend Generator with Real Audio & Randomization'
+    };
   }
-  
-  // 等待所有音频加载完成
-  const audios = await Promise.all(audioPromises);
-  
-  return {
-    success: true,
-    message: '生成成功!(增强版+真实音频+随机变体)',
-    images,
-    audios,
-    prompt: description,
-    method: 'Enhanced Frontend Generator with Real Audio & Randomization'
-  };
 }
