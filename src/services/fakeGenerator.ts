@@ -405,23 +405,25 @@ function generatePixelCreature(description: string, targetSize: number = 64): st
   return canvas.toDataURL();
 }
 
-// 绘制像素史莱姆
+// 绘制像素史莱姆 - 增加随机变化
 function drawPixelSlime(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
-  const size = 10;
+  const size = 9 + (rand(100) % 3); // 随机大小 9-11
+  const squish = 0.8 + (rand(101) % 40) / 100; // 随机扁平度 0.8-1.2
   
-  // 底部阴影 (椭圆形)
+  // 底部阴影 (椭圆形) - 随机宽度
+  const shadowWidth = 6 + (rand(102) % 3);
   for (let y = -3; y <= 3; y++) {
-    for (let x = -6; x <= 6; x++) {
-      if (x * x / 36 + y * y / 9 < 1) {
+    for (let x = -shadowWidth; x <= shadowWidth; x++) {
+      if (x * x / (shadowWidth * shadowWidth) + y * y / 9 < 1) {
         setPixel(pixels, cx + x, cy + size - 3 + y, palette.outline);
       }
     }
   }
   
-  // 主体 (圆形)
+  // 主体 (椭圆形) - 随机形状
   for (let y = -size; y <= size; y++) {
     for (let x = -size; x <= size; x++) {
-      const dist = Math.sqrt(x * x + y * y);
+      const dist = Math.sqrt(x * x / (squish * squish) + y * y);
       if (dist < size) {
         if (dist < size - 2) {
           setPixel(pixels, cx + x, cy + y, palette.main);
@@ -441,101 +443,152 @@ function drawPixelSlime(pixels: string[][], cx: number, cy: number, palette: any
     }
   }
   
-  // 高光
-  for (let y = -size + 2; y <= -size + 5; y++) {
-    for (let x = -size + 2; x <= -size + 5; x++) {
-      if (Math.sqrt((x + size - 3) * (x + size - 3) + (y + size - 3) * (y + size - 3)) < 2) {
+  // 高光 - 随机位置
+  const highlightX = -size + 2 + (rand(103) % 3);
+  const highlightY = -size + 2 + (rand(104) % 3);
+  for (let y = highlightY; y <= highlightY + 3; y++) {
+    for (let x = highlightX; x <= highlightX + 3; x++) {
+      if (Math.sqrt((x - highlightX - 1) * (x - highlightX - 1) + (y - highlightY - 1) * (y - highlightY - 1)) < 2) {
         setPixel(pixels, cx + x, cy + y, palette.light);
       }
     }
   }
   
-  // 眼睛
-  drawPixelEyes(pixels, cx, cy - 2, palette, rand);
+  // 眼睛 - 随机位置
+  const eyeY = cy - 2 + (rand(105) % 3) - 1;
+  drawPixelEyes(pixels, cx, eyeY, palette, rand);
   
-  // 嘴巴
-  for (let x = -2; x <= 2; x++) {
-    setPixel(pixels, cx + x, cy + 4, palette.outline);
+  // 嘴巴 - 3种随机样式
+  const mouthStyle = rand(106) % 3;
+  const mouthY = cy + 4 + (rand(107) % 2);
+  if (mouthStyle === 0) {
+    // 直线嘴
+    for (let x = -2; x <= 2; x++) {
+      setPixel(pixels, cx + x, mouthY, palette.outline);
+    }
+  } else if (mouthStyle === 1) {
+    // 微笑
+    setPixel(pixels, cx - 2, mouthY, palette.outline);
+    setPixel(pixels, cx - 1, mouthY + 1, palette.outline);
+    setPixel(pixels, cx, mouthY + 1, palette.outline);
+    setPixel(pixels, cx + 1, mouthY + 1, palette.outline);
+    setPixel(pixels, cx + 2, mouthY, palette.outline);
+  } else {
+    // 小圆口
+    setPixel(pixels, cx, mouthY, palette.outline);
+    setPixel(pixels, cx - 1, mouthY, palette.outline);
+    setPixel(pixels, cx + 1, mouthY, palette.outline);
   }
 }
 
-// 绘制像素蘑菇
+// 绘制像素蘑菇 - 增加随机变化
 function drawPixelMushroom(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
-  // 腿部
-  for (let i = 0; i < 4; i++) {
-    const legX = cx + (i - 1.5) * 3;
-    for (let y = cy + 5; y < cy + 12; y++) {
+  // 腿部 - 随机数量和位置
+  const legCount = 3 + (rand(200) % 2); // 3-4条腿
+  for (let i = 0; i < legCount; i++) {
+    const legSpacing = legCount === 3 ? 4 : 3;
+    const legX = cx + (i - (legCount - 1) / 2) * legSpacing;
+    const legHeight = 10 + (rand(201 + i) % 3); // 随机腿长
+    for (let y = cy + 5; y < cy + 5 + legHeight; y++) {
       setPixel(pixels, legX, y, palette.dark);
+      // 随机增加腿的粗细
+      if (rand(202 + i) % 2 === 0) {
+        setPixel(pixels, legX + 1, y, palette.dark);
+      }
     }
   }
   
+  // 头部大小随机
+  const headSize = 7 + (rand(203) % 2);
+  
   // 头部轮廓
-  for (let y = -8; y <= 4; y++) {
-    for (let x = -8; x <= 8; x++) {
+  for (let y = -headSize - 1; y <= 4; y++) {
+    for (let x = -headSize - 1; x <= headSize + 1; x++) {
       const dist = Math.sqrt(x * x + y * y);
-      if (dist < 9 && dist > 7.5) {
+      if (dist < headSize + 1 && dist > headSize - 0.5) {
         setPixel(pixels, cx + x, cy + y, palette.outline);
       }
     }
   }
   
   // 头部主体
-  for (let y = -7; y <= 3; y++) {
-    for (let x = -7; x <= 7; x++) {
-      if (Math.sqrt(x * x + y * y) < 7.5) {
+  for (let y = -headSize; y <= 3; y++) {
+    for (let x = -headSize; x <= headSize; x++) {
+      if (Math.sqrt(x * x + y * y) < headSize) {
         setPixel(pixels, cx + x, cy + y, palette.main);
       }
     }
   }
   
-  // 斑点装饰
-  const spots = [[0, -4], [-4, -2], [4, -2], [-2, 1], [2, 1]];
-  for (const [sx, sy] of spots) {
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (Math.abs(dx) + Math.abs(dy) < 2) {
+  // 斑点装饰 - 随机数量和位置
+  const spotCount = 3 + (rand(204) % 4); // 3-6个斑点
+  for (let i = 0; i < spotCount; i++) {
+    const angle = (i / spotCount) * Math.PI * 2 + rand(205 + i) / 50;
+    const distance = 2 + (rand(206 + i) % 4);
+    const sx = Math.floor(Math.cos(angle) * distance);
+    const sy = Math.floor(Math.sin(angle) * distance) - 2;
+    const spotSize = 1 + (rand(207 + i) % 2);
+    
+    for (let dy = -spotSize; dy <= spotSize; dy++) {
+      for (let dx = -spotSize; dx <= spotSize; dx++) {
+        if (Math.abs(dx) + Math.abs(dy) <= spotSize) {
           setPixel(pixels, cx + sx + dx, cy + sy + dy, palette.light);
         }
       }
     }
   }
   
-  // 眼睛
-  drawPixelEyes(pixels, cx, cy, palette, rand);
+  // 眼睛 - 随机位置
+  const eyeY = cy + (rand(208) % 3) - 1;
+  drawPixelEyes(pixels, cx, eyeY, palette, rand);
 }
 
-// 绘制像素幽灵
+// 绘制像素幽灵 - 增加随机变化
 function drawPixelGhost(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  const bodyWidth = 5 + (rand(300) % 3); // 随机宽度 5-7
+  const bodyHeight = 7 + (rand(301) % 3); // 随机高度 7-9
+  
   // 头部
-  for (let y = -8; y <= 2; y++) {
-    for (let x = -6; x <= 6; x++) {
+  for (let y = -bodyHeight; y <= 2; y++) {
+    for (let x = -bodyWidth; x <= bodyWidth; x++) {
       const dist = Math.sqrt(x * x + Math.max(0, y) * Math.max(0, y));
-      if (dist < 7) {
+      if (dist < bodyWidth + 1) {
         setPixel(pixels, cx + x, cy + y, y < 0 ? palette.main : palette.main);
       }
     }
   }
   
-  // 波浪底部
-  for (let x = -6; x <= 6; x++) {
-    const wave = Math.sin(x * 0.8) * 2;
+  // 波浪底部 - 随机波浪样式
+  const waveStyle = rand(302) % 3;
+  for (let x = -bodyWidth; x <= bodyWidth; x++) {
+    let wave = 0;
+    if (waveStyle === 0) {
+      wave = Math.sin(x * 0.8) * 2; // 正弦波
+    } else if (waveStyle === 1) {
+      wave = Math.abs(x % 3) - 1; // 锯齿波
+    } else {
+      wave = x % 2 === 0 ? 1 : -1; // 方波
+    }
     for (let y = 2; y < 2 + wave + 4; y++) {
       setPixel(pixels, cx + x, cy + y, palette.main);
     }
   }
   
-  // 半透明效果 (用浅色模拟)
-  for (let y = -6; y <= -2; y++) {
-    for (let x = -4; x <= 0; x++) {
-      if (Math.sqrt(x * x + y * y) < 4) {
+  // 半透明效果 (用浅色模拟) - 随机位置和大小
+  const glowSize = 3 + (rand(303) % 2);
+  const glowX = -bodyWidth + (rand(304) % 3);
+  const glowY = -bodyHeight + (rand(305) % 3);
+  for (let y = glowY; y <= glowY + glowSize; y++) {
+    for (let x = glowX; x <= glowX + glowSize; x++) {
+      if (Math.sqrt((x - glowX - 1) * (x - glowX - 1) + (y - glowY - 1) * (y - glowY - 1)) < glowSize) {
         setPixel(pixels, cx + x, cy + y, palette.light);
       }
     }
   }
   
   // 轮廓
-  for (let y = -8; y <= 8; y++) {
-    for (let x = -6; x <= 6; x++) {
+  for (let y = -bodyHeight - 1; y <= 10; y++) {
+    for (let x = -bodyWidth - 1; x <= bodyWidth + 1; x++) {
       if (getPixel(pixels, cx + x, cy + y) === palette.main || getPixel(pixels, cx + x, cy + y) === palette.light) {
         // 检查周围是否有透明像素
         if (getPixel(pixels, cx + x + 1, cy + y) === 'transparent' ||
@@ -550,95 +603,196 @@ function drawPixelGhost(pixels: string[][], cx: number, cy: number, palette: any
     }
   }
   
-  // 眼睛
-  drawPixelEyes(pixels, cx, cy - 2, palette, rand);
+  // 眼睛 - 随机位置
+  const eyeY = cy - 2 + (rand(306) % 3) - 1;
+  drawPixelEyes(pixels, cx, eyeY, palette, rand);
 }
 
-// 绘制像素恶魔
+// 绘制像素恶魔 - 增加随机变化
 function drawPixelDemon(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
+  const bodySize = 5 + (rand(400) % 3); // 随机身体大小 5-7
+  const wingSize = 3 + (rand(401) % 2); // 随机翅膀大小 3-4
+  const wingSpread = 10 + (rand(402) % 3); // 随机翅膀展开距离 10-12
+  
+  // 翅膀样式随机
+  const wingStyle = rand(403) % 2;
+  
   // 翅膀 (左)
-  for (let y = -4; y <= 4; y++) {
-    for (let x = -12; x <= -8; x++) {
-      const dist = Math.sqrt((x + 10) * (x + 10) + y * y);
-      if (dist < 4) {
-        setPixel(pixels, cx + x, cy + y, palette.dark);
+  for (let y = -wingSize; y <= wingSize; y++) {
+    for (let x = -wingSpread - 2; x <= -wingSpread + 2; x++) {
+      const dist = Math.sqrt((x + wingSpread) * (x + wingSpread) + y * y);
+      if (wingStyle === 0) {
+        // 圆形翅膀
+        if (dist < wingSize) {
+          setPixel(pixels, cx + x, cy + y, palette.dark);
+        }
+      } else {
+        // 尖角翅膀
+        if (Math.abs(y) + Math.abs(x + wingSpread) < wingSize + 1) {
+          setPixel(pixels, cx + x, cy + y, palette.dark);
+        }
       }
     }
   }
   
   // 翅膀 (右)
-  for (let y = -4; y <= 4; y++) {
-    for (let x = 8; x <= 12; x++) {
-      const dist = Math.sqrt((x - 10) * (x - 10) + y * y);
-      if (dist < 4) {
-        setPixel(pixels, cx + x, cy + y, palette.dark);
+  for (let y = -wingSize; y <= wingSize; y++) {
+    for (let x = wingSpread - 2; x <= wingSpread + 2; x++) {
+      const dist = Math.sqrt((x - wingSpread) * (x - wingSpread) + y * y);
+      if (wingStyle === 0) {
+        // 圆形翅膀
+        if (dist < wingSize) {
+          setPixel(pixels, cx + x, cy + y, palette.dark);
+        }
+      } else {
+        // 尖角翅膀
+        if (Math.abs(y) + Math.abs(x - wingSpread) < wingSize + 1) {
+          setPixel(pixels, cx + x, cy + y, palette.dark);
+        }
       }
     }
   }
   
   // 身体
-  for (let y = -6; y <= 6; y++) {
-    for (let x = -6; x <= 6; x++) {
-      if (Math.sqrt(x * x + y * y) < 6) {
+  for (let y = -bodySize; y <= bodySize; y++) {
+    for (let x = -bodySize; x <= bodySize; x++) {
+      if (Math.sqrt(x * x + y * y) < bodySize) {
         setPixel(pixels, cx + x, cy + y, palette.main);
       }
     }
   }
   
-  // 角 (左)
-  for (let y = -10; y <= -6; y++) {
-    for (let x = -4; x <= -2; x++) {
-      setPixel(pixels, cx + x, cy + y, palette.accent);
-    }
-  }
+  // 角 - 随机样式
+  const hornStyle = rand(404) % 3;
+  const hornHeight = 3 + (rand(405) % 3); // 随机角高 3-5
+  const hornSpacing = 2 + (rand(406) % 2); // 随机角间距 2-3
   
-  // 角 (右)
-  for (let y = -10; y <= -6; y++) {
-    for (let x = 2; x <= 4; x++) {
-      setPixel(pixels, cx + x, cy + y, palette.accent);
+  if (hornStyle === 0) {
+    // 直角
+    for (let y = -bodySize - hornHeight; y <= -bodySize; y++) {
+      for (let x = -hornSpacing - 1; x <= -hornSpacing + 1; x++) {
+        setPixel(pixels, cx + x, cy + y, palette.accent);
+      }
+      for (let x = hornSpacing - 1; x <= hornSpacing + 1; x++) {
+        setPixel(pixels, cx + x, cy + y, palette.accent);
+      }
+    }
+  } else if (hornStyle === 1) {
+    // 尖角
+    for (let i = 0; i < hornHeight; i++) {
+      const width = Math.floor((hornHeight - i) / 2);
+      for (let w = -width; w <= width; w++) {
+        setPixel(pixels, cx - hornSpacing + w, cy - bodySize - i, palette.accent);
+        setPixel(pixels, cx + hornSpacing + w, cy - bodySize - i, palette.accent);
+      }
+    }
+  } else {
+    // 弯曲角
+    for (let i = 0; i < hornHeight; i++) {
+      setPixel(pixels, cx - hornSpacing - Math.floor(i / 2), cy - bodySize - i, palette.accent);
+      setPixel(pixels, cx + hornSpacing + Math.floor(i / 2), cy - bodySize - i, palette.accent);
     }
   }
   
   // 阴影
-  for (let y = 2; y <= 5; y++) {
-    for (let x = -5; x <= 5; x++) {
-      if (Math.sqrt(x * x + (y - 3) * (y - 3)) < 4) {
+  for (let y = bodySize / 2; y <= bodySize + 1; y++) {
+    for (let x = -bodySize + 1; x <= bodySize - 1; x++) {
+      if (Math.sqrt(x * x + (y - bodySize / 2) * (y - bodySize / 2)) < bodySize / 2) {
         setPixel(pixels, cx + x, cy + y, palette.dark);
       }
     }
   }
   
-  // 眼睛
-  drawPixelEyes(pixels, cx, cy - 1, palette, rand);
+  // 眼睛 - 随机位置
+  const eyeY = cy - 1 + (rand(407) % 3) - 1;
+  drawPixelEyes(pixels, cx, eyeY, palette, rand);
 }
 
-// 绘制像素眼睛
+// 绘制像素眼睛 - 增加随机变化
 function drawPixelEyes(pixels: string[][], cx: number, cy: number, palette: any, rand: (n: number) => number) {
-  const eyeSpacing = 4;
+  const eyeSpacing = 3 + (rand(500) % 2); // 随机眼距 3-4
+  const eyeSize = 1 + (rand(501) % 2); // 随机眼睛大小 1-2
+  const pupilLook = rand(502) % 5; // 随机瞳孔方向 0-4
   
-  // 左眼白
-  for (let y = -1; y <= 1; y++) {
-    for (let x = -1; x <= 1; x++) {
-      setPixel(pixels, cx - eyeSpacing + x, cy + y, palette.white);
+  // 眼睛样式
+  const eyeStyle = rand(503) % 3;
+  
+  if (eyeStyle === 0) {
+    // 标准圆眼
+    // 左眼白
+    for (let y = -eyeSize; y <= eyeSize; y++) {
+      for (let x = -eyeSize; x <= eyeSize; x++) {
+        if (Math.abs(x) + Math.abs(y) <= eyeSize) {
+          setPixel(pixels, cx - eyeSpacing + x, cy + y, palette.white);
+        }
+      }
     }
-  }
-  
-  // 右眼白
-  for (let y = -1; y <= 1; y++) {
-    for (let x = -1; x <= 1; x++) {
-      setPixel(pixels, cx + eyeSpacing + x, cy + y, palette.white);
+    
+    // 右眼白
+    for (let y = -eyeSize; y <= eyeSize; y++) {
+      for (let x = -eyeSize; x <= eyeSize; x++) {
+        if (Math.abs(x) + Math.abs(y) <= eyeSize) {
+          setPixel(pixels, cx + eyeSpacing + x, cy + y, palette.white);
+        }
+      }
     }
+    
+    // 瞳孔方向 (0=中 1=左 2=右 3=上 4=下)
+    const pupilOffsetX = pupilLook === 1 ? -1 : pupilLook === 2 ? 1 : 0;
+    const pupilOffsetY = pupilLook === 3 ? -1 : pupilLook === 4 ? 1 : 0;
+    
+    setPixel(pixels, cx - eyeSpacing + pupilOffsetX, cy + pupilOffsetY, palette.black);
+    setPixel(pixels, cx + eyeSpacing + pupilOffsetX, cy + pupilOffsetY, palette.black);
+    
+    // 眼睛高光
+    setPixel(pixels, cx - eyeSpacing - 1, cy - 1, palette.eyeHighlight);
+    setPixel(pixels, cx + eyeSpacing - 1, cy - 1, palette.eyeHighlight);
+    
+  } else if (eyeStyle === 1) {
+    // 愤怒眼 (斜线)
+    setPixel(pixels, cx - eyeSpacing - 1, cy - 1, palette.black);
+    setPixel(pixels, cx - eyeSpacing, cy, palette.black);
+    setPixel(pixels, cx - eyeSpacing + 1, cy + 1, palette.black);
+    
+    setPixel(pixels, cx + eyeSpacing + 1, cy - 1, palette.black);
+    setPixel(pixels, cx + eyeSpacing, cy, palette.black);
+    setPixel(pixels, cx + eyeSpacing - 1, cy + 1, palette.black);
+    
+  } else {
+    // 可爱大眼
+    // 左眼 - 更大的白色区域
+    for (let y = -2; y <= 2; y++) {
+      for (let x = -2; x <= 2; x++) {
+        if (x * x + y * y < 5) {
+          setPixel(pixels, cx - eyeSpacing + x, cy + y, palette.white);
+        }
+      }
+    }
+    
+    // 右眼 - 更大的白色区域
+    for (let y = -2; y <= 2; y++) {
+      for (let x = -2; x <= 2; x++) {
+        if (x * x + y * y < 5) {
+          setPixel(pixels, cx + eyeSpacing + x, cy + y, palette.white);
+        }
+      }
+    }
+    
+    // 大瞳孔
+    setPixel(pixels, cx - eyeSpacing, cy, palette.black);
+    setPixel(pixels, cx - eyeSpacing + 1, cy, palette.black);
+    setPixel(pixels, cx - eyeSpacing, cy + 1, palette.black);
+    
+    setPixel(pixels, cx + eyeSpacing, cy, palette.black);
+    setPixel(pixels, cx + eyeSpacing - 1, cy, palette.black);
+    setPixel(pixels, cx + eyeSpacing, cy + 1, palette.black);
+    
+    // 大高光
+    setPixel(pixels, cx - eyeSpacing - 1, cy - 1, palette.eyeHighlight);
+    setPixel(pixels, cx - eyeSpacing, cy - 1, palette.eyeHighlight);
+    setPixel(pixels, cx + eyeSpacing, cy - 1, palette.eyeHighlight);
+    setPixel(pixels, cx + eyeSpacing + 1, cy - 1, palette.eyeHighlight);
   }
-  
-  // 左瞳孔
-  setPixel(pixels, cx - eyeSpacing, cy, palette.black);
-  
-  // 右瞳孔
-  setPixel(pixels, cx + eyeSpacing, cy, palette.black);
-  
-  // 眼睛高光
-  setPixel(pixels, cx - eyeSpacing - 1, cy - 1, palette.eyeHighlight);
-  setPixel(pixels, cx + eyeSpacing - 1, cy - 1, palette.eyeHighlight);
 }
 
 // 辅助函数
@@ -678,30 +832,46 @@ const AUDIO_LIBRARY: { [key: string]: string[] } = {
   ]
 };
 
-// 根据描述选择匹配的音频文件
+// 根据描述选择匹配的音频文件 - 增强随机性
 function selectAudioByKeyword(description: string, seed: number): string {
   const desc = description.toLowerCase();
   
-  // 按优先级匹配关键词
-  let selectedCategory = 'growl'; // 默认
+  // 收集所有可能的音频类别
+  const possibleCategories: string[] = [];
   
+  // 根据关键词匹配类别(可以匹配多个)
   if (desc.includes('roar') || desc.includes('咆哮') || desc.includes('aggressive') || desc.includes('beast')) {
-    selectedCategory = 'roar';
-  } else if (desc.includes('scream') || desc.includes('尖叫') || desc.includes('angry')) {
-    selectedCategory = 'scream';
-  } else if (desc.includes('laugh') || desc.includes('笑') || desc.includes('troll')) {
-    selectedCategory = 'laugh';
-  } else if (desc.includes('cry') || desc.includes('hurt') || desc.includes('哭')) {
-    selectedCategory = 'cry';
-  } else if (desc.includes('growl') || desc.includes('低吼') || desc.includes('calm')) {
-    selectedCategory = 'growl';
+    possibleCategories.push('roar');
+  }
+  if (desc.includes('scream') || desc.includes('尖叫') || desc.includes('angry')) {
+    possibleCategories.push('scream');
+  }
+  if (desc.includes('laugh') || desc.includes('笑') || desc.includes('troll')) {
+    possibleCategories.push('laugh');
+  }
+  if (desc.includes('cry') || desc.includes('hurt') || desc.includes('哭')) {
+    possibleCategories.push('cry');
+  }
+  if (desc.includes('growl') || desc.includes('低吼') || desc.includes('calm')) {
+    possibleCategories.push('growl');
   }
   
-  // 从该类别中根据seed选择一个
-  const audioList = AUDIO_LIBRARY[selectedCategory];
-  const index = seed % audioList.length;
+  // 如果没有匹配任何关键词,随机选择一个类别
+  if (possibleCategories.length === 0) {
+    const allCategories = Object.keys(AUDIO_LIBRARY);
+    const randomCategoryIndex = seed % allCategories.length;
+    possibleCategories.push(allCategories[randomCategoryIndex]);
+  }
   
-  return audioList[index];
+  // 从匹配的类别中随机选一个
+  const categoryIndex = seed % possibleCategories.length;
+  const selectedCategory = possibleCategories[categoryIndex];
+  
+  // 从该类别的音频列表中随机选择一个
+  const audioList = AUDIO_LIBRARY[selectedCategory];
+  const audioIndex = Math.floor((seed * 7 + Date.now()) % audioList.length);
+  
+  return audioList[audioIndex];
 }
 
 // 生成音频 - 使用真实音频文件
@@ -730,13 +900,13 @@ async function generateAudio(description: string): Promise<string> {
   }
 }
 
-// 主生成函数
+// 主生成函数 - 增加随机性
 export async function generateCreatureOffline(
   description: string,
   pixelSize: string = '32px',
   quantity: number = 4
 ): Promise<any> {
-  console.log('🎨 使用增强版前端生成器(真实音频):', description);
+  console.log('🎨 使用增强版前端生成器(真实音频+随机性):', description);
   
   const images: string[] = [];
   const audioPromises: Promise<string>[] = [];
@@ -744,8 +914,9 @@ export async function generateCreatureOffline(
   const size = parseInt(pixelSize.replace('px', ''));
   
   for (let i = 0; i < quantity; i++) {
-    // 为每个变体添加不同的后缀
-    const variantDesc = `${description}_variant_${i}`;
+    // 为每个变体添加随机时间戳和索引,确保每次都不同
+    const randomSeed = Date.now() + Math.random() * 10000 + i * 1000;
+    const variantDesc = `${description}_${randomSeed}`;
     images.push(generatePixelCreature(variantDesc, size));
     audioPromises.push(generateAudio(variantDesc));
   }
@@ -755,10 +926,10 @@ export async function generateCreatureOffline(
   
   return {
     success: true,
-    message: '生成成功!(增强版+真实音频)',
+    message: '生成成功!(增强版+真实音频+随机变体)',
     images,
     audios,
     prompt: description,
-    method: 'Enhanced Frontend Generator with Real Audio'
+    method: 'Enhanced Frontend Generator with Real Audio & Randomization'
   };
 }
