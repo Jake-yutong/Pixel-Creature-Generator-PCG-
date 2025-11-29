@@ -392,7 +392,9 @@ function generatePixelCreature(description: string, targetSize: number = 64, aiC
   canvas.height = pixelRes * pixelSize;
   const ctx = canvas.getContext('2d')!;
   
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // 设置白色背景,避免透明导致显示问题
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.imageSmoothingEnabled = false;
   
   const seed = simpleHash(description);
@@ -406,8 +408,12 @@ function generatePixelCreature(description: string, targetSize: number = 64, aiC
   // 根据描述和随机数选择形状类型 - 使用时间戳增加随机性
   const shapeType = timeBasedRand(10) % 4;
   
-  // 创建像素数据数组 (32x32)
-  const pixels: string[][] = Array(pixelRes).fill(null).map(() => Array(pixelRes).fill('transparent'));
+  // 创建像素数据数组 (32x32) - 修复: 不能用fill(null),要用Array.from创建独立数组
+  const pixels: string[][] = Array.from({ length: pixelRes }, () => 
+    Array.from({ length: pixelRes }, () => 'transparent')
+  );
+  
+  console.log('🔍 Pixels数组创建:', `长度=${pixels.length}, 第一行长度=${pixels[0]?.length}, 类型=${typeof pixels[0]}`);
   
   const centerX = Math.floor(pixelRes / 2);
   const centerY = Math.floor(pixelRes / 2);
@@ -430,16 +436,30 @@ function generatePixelCreature(description: string, targetSize: number = 64, aiC
   // 将像素数组绘制到画布
   let pixelCount = 0;
   const colorUsage: {[key: string]: number} = {};
+  
+  console.log(`🔍 开始绘制: Canvas尺寸=${canvas.width}x${canvas.height}, pixelSize=${pixelSize}, pixelRes=${pixelRes}`);
+  
   for (let y = 0; y < pixelRes; y++) {
     for (let x = 0; x < pixelRes; x++) {
-      if (pixels[y][x] !== 'transparent') {
-        drawPixel(ctx, x * pixelSize, y * pixelSize, pixels[y][x], pixelSize);
+      const color = pixels[y][x];
+      if (color !== 'transparent') {
+        const drawX = x * pixelSize;
+        const drawY = y * pixelSize;
+        drawPixel(ctx, drawX, drawY, color, pixelSize);
         pixelCount++;
-        colorUsage[pixels[y][x]] = (colorUsage[pixels[y][x]] || 0) + 1;
+        colorUsage[color] = (colorUsage[color] || 0) + 1;
+        
+        // 记录前几个像素的绘制信息
+        if (pixelCount <= 3) {
+          console.log(`  像素${pixelCount}: 位置(${x},${y}) -> Canvas(${drawX},${drawY}), 颜色=${color}`);
+        }
       }
     }
   }
   console.log(`📊 绘制了${pixelCount}个像素, 使用了${Object.keys(colorUsage).length}种颜色`);
+  if (pixelCount === 0) {
+    console.error('⚠️ 警告: 没有绘制任何像素! pixels数组可能为空');
+  }
   console.log('🎨 颜色使用情况:', colorUsage);
   
   return canvas.toDataURL();
@@ -837,9 +857,23 @@ function drawPixelEyes(pixels: string[][], cx: number, cy: number, palette: any,
 
 // 辅助函数
 function setPixel(pixels: string[][], x: number, y: number, color: string) {
-  if (y >= 0 && y < pixels.length && x >= 0 && x < pixels[0].length) {
-    pixels[y][x] = color;
+  if (!pixels || pixels.length === 0) {
+    console.error('❌ pixels数组为空或未定义!');
+    return;
   }
+  if (y < 0 || y >= pixels.length) {
+    console.warn(`⚠️ y坐标越界: y=${y}, pixels.length=${pixels.length}`);
+    return;
+  }
+  if (!pixels[y]) {
+    console.error(`❌ pixels[${y}]未定义! pixels数组可能初始化失败`);
+    return;
+  }
+  if (x < 0 || x >= pixels[y].length) {
+    console.warn(`⚠️ x坐标越界: x=${x}, pixels[${y}].length=${pixels[y].length}`);
+    return;
+  }
+  pixels[y][x] = color;
 }
 
 function getPixel(pixels: string[][], x: number, y: number): string {
@@ -960,21 +994,36 @@ export async function generateCreatureOffline(
       const randomSeed = Date.now() + Math.random() * 10000 + i * 1000;
       const variantDesc = `${description}_${randomSeed}_variant${i}`;
       
-      // 如果有AI颜色,使用AI颜色;否则让每个变体生成完全不同的随机颜色
+      // 智能选择颜色策略
       let variantColors = aiColors;
       if (!aiColors) {
-        // 为每个变体生成独特的随机配色方案
-        const hue = (i * 90 + Math.floor(Math.random() * 60)) % 360; // 每个变体相隔90度色相
-        const saturation = 65 + Math.floor(Math.random() * 20); // 65-85%
-        const baseLightness = 50 + Math.floor(Math.random() * 10); // 50-60%
-        variantColors = [
-          `hsl(${hue}, ${saturation}%, ${baseLightness}%)`,           // main - 中等亮度
-          `hsl(${hue}, ${Math.min(saturation + 15, 95)}%, ${Math.max(baseLightness - 25, 25)}%)`, // dark - 更暗
-          `hsl(${hue}, ${Math.max(saturation - 10, 50)}%, ${Math.min(baseLightness + 25, 85)}%)`, // light - 更亮
-          `hsl(${(hue + 30) % 360}, ${saturation}%, ${baseLightness + 5}%)`, // accent - 稍微偏色
-          `hsl(${hue}, ${saturation}%, 15%)`                          // outline - 很暗
-        ];
-        console.log(`🎨 变体${i + 1}随机配色: 色相${hue}°, 饱和度${saturation}%, 基础亮度${baseLightness}%`);
+        const descLower = description.toLowerCase();
+        // 检查是否包含明确的颜色关键词
+        const hasColorKeyword = 
+          descLower.includes('red') || descLower.includes('fire') || descLower.includes('红') || descLower.includes('火') ||
+          descLower.includes('blue') || descLower.includes('ice') || descLower.includes('蓝') || descLower.includes('冰') ||
+          descLower.includes('green') || descLower.includes('slime') || descLower.includes('绿') || descLower.includes('史莱姆') ||
+          descLower.includes('purple') || descLower.includes('dark') || descLower.includes('紫') || descLower.includes('暗') ||
+          descLower.includes('yellow') || descLower.includes('gold') || descLower.includes('黄') || descLower.includes('金');
+        
+        // 如果有颜色关键词,不传variantColors,让getColorPalette根据关键词选择
+        if (!hasColorKeyword) {
+          // 没有颜色关键词时,才使用随机颜色
+          const hue = (i * 90 + Math.floor(Math.random() * 60)) % 360;
+          const saturation = 65 + Math.floor(Math.random() * 20);
+          const baseLightness = 50 + Math.floor(Math.random() * 10);
+          variantColors = [
+            `hsl(${hue}, ${saturation}%, ${baseLightness}%)`,
+            `hsl(${hue}, ${Math.min(saturation + 15, 95)}%, ${Math.max(baseLightness - 25, 25)}%)`,
+            `hsl(${hue}, ${Math.max(saturation - 10, 50)}%, ${Math.min(baseLightness + 25, 85)}%)`,
+            `hsl(${(hue + 30) % 360}, ${saturation}%, ${baseLightness + 5}%)`,
+            `hsl(${hue}, ${saturation}%, 15%)`
+          ];
+          console.log(`🎨 变体${i + 1}随机配色(无颜色关键词): 色相${hue}°`);
+        } else {
+          console.log(`🎨 变体${i + 1}使用关键词匹配颜色: "${description}"`);
+          variantColors = undefined; // 让getColorPalette根据描述关键词选择
+        }
       }
       
       try {
