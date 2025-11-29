@@ -396,6 +396,7 @@ function generatePixelCreature(description: string, targetSize: number = 64, aiC
   
   const seed = simpleHash(description);
   const palette = getColorPalette(description, seed, aiColors);
+  console.log('🎨 生成调色板:', palette);
   const rand = (offset: number) => (seed + offset) % 100;
   
   // 增强随机性 - 使用时间戳让每次生成都不同
@@ -426,13 +427,19 @@ function generatePixelCreature(description: string, targetSize: number = 64, aiC
   }
   
   // 将像素数组绘制到画布
+  let pixelCount = 0;
+  const colorUsage: {[key: string]: number} = {};
   for (let y = 0; y < pixelRes; y++) {
     for (let x = 0; x < pixelRes; x++) {
       if (pixels[y][x] !== 'transparent') {
         drawPixel(ctx, x * pixelSize, y * pixelSize, pixels[y][x], pixelSize);
+        pixelCount++;
+        colorUsage[pixels[y][x]] = (colorUsage[pixels[y][x]] || 0) + 1;
       }
     }
   }
+  console.log(`📊 绘制了${pixelCount}个像素, 使用了${Object.keys(colorUsage).length}种颜色`);
+  console.log('🎨 颜色使用情况:', colorUsage);
   
   return canvas.toDataURL();
 }
