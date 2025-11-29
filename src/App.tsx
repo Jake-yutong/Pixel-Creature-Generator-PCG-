@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
 import { Settings, Heart } from "lucide-react";
-import { generateCreature, checkBackend } from "./services/api";
+import { generateCreatureOffline } from "./services/fakeGenerator";
 
 export type Theme = 'dark' | 'light';
 
@@ -48,7 +48,6 @@ export default function App() {
   const [userInput, setUserInput] = useState<string>(''); // 存储用户输入
   const [lastPixelSize, setLastPixelSize] = useState<string>('32px'); // 存储上次的像素大小
   const [lastQuantity, setLastQuantity] = useState<number>(4); // 存储上次的生成数量
-  const [backendStatus, setBackendStatus] = useState<string>('检查中...'); // 后端状态
   const [currentPage, setCurrentPage] = useState(0); // 当前页码（0或1）
 
   // 保存收藏数据到 localStorage
@@ -65,13 +64,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('generatedAudios', JSON.stringify(generatedAudios));
   }, [generatedAudios]);
-
-  // 页面加载时检查后端是否在线
-  useEffect(() => {
-    checkBackend().then(isOnline => {
-      setBackendStatus(isOnline ? '✅ 后端已连接' : '❌ 后端未连接');
-    });
-  }, []);
 
   // 同步当前生成图片的收藏状态（根据 favoritesData）
   useEffect(() => {
@@ -109,8 +101,8 @@ export default function App() {
     try {
       console.log('🎨 开始生成怪物变体:', description, '像素大小:', pixelSize, '数量:', quantity);
       
-      // 调用真实的后端 API
-      const result = await generateCreature(description, pixelSize, quantity);
+      // 使用纯前端生成器
+      const result = await generateCreatureOffline(description, pixelSize, quantity);
       
       if (result.success && result.images) {
         console.log('📦 收到的数据:', result);
@@ -126,7 +118,7 @@ export default function App() {
       }
     } catch (error) {
       console.error('生成出错:', error);
-      alert('连接后端失败，请确保 Python 服务器正在运行！');
+      alert('生成失败，请重试！');
       setIsCompleted(false);
     } finally {
       setIsGenerating(false);
