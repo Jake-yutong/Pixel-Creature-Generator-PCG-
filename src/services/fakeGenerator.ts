@@ -32,54 +32,67 @@ function getColorPalette(description: string, seed: number, aiColors?: string[])
     };
   }
   
-  // 根据描述选择基础色系
+  // 根据描述选择基础色系,但每个变体在色系内随机变化
   let palette: any;
   
+  // 随机选择一个色系变化范围(让同一描述的4个变体也不同)
+  const colorVariation = rand(999) % 5; // 0-4, 5种变化
+  
   if (desc.includes('fire') || desc.includes('red') || desc.includes('火') || desc.includes('红')) {
-    // 红色蘑菇系 - 暖色调
+    // 红色系 - 从橙红到深红的渐变
+    const hueShift = colorVariation * 10; // 0, 10, 20, 30, 40
+    const satShift = colorVariation * 5;
     palette = {
-      main: `hsl(${rand(0) % 30}, 80%, 55%)`,
-      dark: `hsl(${rand(0) % 30}, 70%, 35%)`,
-      light: `hsl(${rand(0) % 30}, 85%, 75%)`,
-      accent: `hsl(30, 75%, 65%)`,
-      outline: '#2a1810'
+      main: `hsl(${(rand(0) % 30 + hueShift) % 360}, ${75 + satShift}%, ${50 + colorVariation * 3}%)`,
+      dark: `hsl(${(rand(0) % 30 + hueShift) % 360}, ${70 + satShift}%, ${30 + colorVariation * 2}%)`,
+      light: `hsl(${(rand(0) % 30 + hueShift) % 360}, ${80 + satShift}%, ${70 + colorVariation * 2}%)`,
+      accent: `hsl(${(30 + hueShift * 2) % 360}, ${70 + satShift}%, ${60 + colorVariation}%)`,
+      outline: `hsl(${rand(0) % 30}, 50%, ${10 + colorVariation * 2}%)`
     };
   } else if (desc.includes('green') || desc.includes('slime') || desc.includes('绿') || desc.includes('史莱姆')) {
-    // 绿色史莱姆系 - 清新色调
+    // 绿色系 - 从黄绿到蓝绿的渐变
+    const hueShift = colorVariation * 15;
+    const satShift = colorVariation * 4;
     palette = {
-      main: `hsl(${120 + rand(0) % 60}, 65%, 50%)`,
-      dark: `hsl(${120 + rand(0) % 60}, 70%, 30%)`,
-      light: `hsl(${120 + rand(0) % 60}, 75%, 70%)`,
-      accent: `hsl(${160 + rand(0) % 30}, 60%, 55%)`,
-      outline: '#1a3a1a'
+      main: `hsl(${90 + rand(0) % 70 + hueShift}, ${60 + satShift}%, ${45 + colorVariation * 3}%)`,
+      dark: `hsl(${90 + rand(0) % 70 + hueShift}, ${65 + satShift}%, ${25 + colorVariation * 2}%)`,
+      light: `hsl(${90 + rand(0) % 70 + hueShift}, ${70 + satShift}%, ${65 + colorVariation * 2}%)`,
+      accent: `hsl(${140 + rand(0) % 40 + hueShift}, ${55 + satShift}%, ${50 + colorVariation}%)`,
+      outline: `hsl(${120 + hueShift}, 60%, ${10 + colorVariation * 2}%)`
     };
   } else if (desc.includes('blue') || desc.includes('ice') || desc.includes('蓝') || desc.includes('冰')) {
-    // 蓝色冰霜系 - 冷色调
+    // 蓝色系 - 从青色到深蓝的渐变
+    const hueShift = colorVariation * 12;
+    const satShift = colorVariation * 5;
     palette = {
-      main: `hsl(${180 + rand(0) % 60}, 70%, 55%)`,
-      dark: `hsl(${180 + rand(0) % 60}, 75%, 35%)`,
-      light: `hsl(${180 + rand(0) % 60}, 80%, 75%)`,
-      accent: `hsl(${200 + rand(0) % 40}, 65%, 60%)`,
-      outline: '#0a2a3a'
+      main: `hsl(${170 + rand(0) % 70 + hueShift}, ${65 + satShift}%, ${50 + colorVariation * 3}%)`,
+      dark: `hsl(${170 + rand(0) % 70 + hueShift}, ${70 + satShift}%, ${30 + colorVariation * 2}%)`,
+      light: `hsl(${170 + rand(0) % 70 + hueShift}, ${75 + satShift}%, ${70 + colorVariation * 2}%)`,
+      accent: `hsl(${190 + rand(0) % 50 + hueShift}, ${60 + satShift}%, ${55 + colorVariation}%)`,
+      outline: `hsl(${200 + hueShift}, 70%, ${8 + colorVariation * 2}%)`
     };
   } else if (desc.includes('purple') || desc.includes('dark') || desc.includes('紫') || desc.includes('暗')) {
-    // 紫色黑暗系 - 神秘色调
+    // 紫色系 - 从粉紫到深紫的渐变
+    const hueShift = colorVariation * 18;
+    const satShift = colorVariation * 6;
     palette = {
-      main: `hsl(${270 + rand(0) % 60}, 60%, 45%)`,
-      dark: `hsl(${270 + rand(0) % 60}, 65%, 25%)`,
-      light: `hsl(${270 + rand(0) % 60}, 70%, 65%)`,
-      accent: `hsl(${300 + rand(0) % 40}, 55%, 50%)`,
-      outline: '#1a0a2a'
+      main: `hsl(${260 + rand(0) % 60 + hueShift}, ${55 + satShift}%, ${40 + colorVariation * 3}%)`,
+      dark: `hsl(${260 + rand(0) % 60 + hueShift}, ${60 + satShift}%, ${20 + colorVariation * 2}%)`,
+      light: `hsl(${260 + rand(0) % 60 + hueShift}, ${65 + satShift}%, ${60 + colorVariation * 2}%)`,
+      accent: `hsl(${290 + rand(0) % 50 + hueShift}, ${50 + satShift}%, ${45 + colorVariation}%)`,
+      outline: `hsl(${280 + hueShift}, 50%, ${8 + colorVariation * 2}%)`
     };
   } else {
-    // 随机混合色系
-    const baseHue = rand(0) % 360;
+    // 完全随机色系 - 每个变体完全不同的颜色
+    const baseHue = (rand(0) * colorVariation * 73) % 360; // 使用质数让分布更均匀
+    const saturation = 60 + rand(100) % 30;
+    const lightness = 45 + rand(200) % 20;
     palette = {
-      main: `hsl(${baseHue}, 70%, 50%)`,
-      dark: `hsl(${baseHue}, 75%, 30%)`,
-      light: `hsl(${baseHue}, 80%, 70%)`,
-      accent: `hsl(${(baseHue + 40) % 360}, 65%, 55%)`,
-      outline: '#1a1a1a'
+      main: `hsl(${baseHue}, ${saturation}%, ${lightness}%)`,
+      dark: `hsl(${baseHue}, ${saturation + 10}%, ${lightness - 20}%)`,
+      light: `hsl(${baseHue}, ${saturation + 15}%, ${lightness + 25}%)`,
+      accent: `hsl(${(baseHue + 60 + rand(300) % 120) % 360}, ${saturation - 5}%, ${lightness + 10}%)`,
+      outline: `hsl(${baseHue}, ${saturation}%, ${10 + colorVariation * 2}%)`
     };
   }
   
@@ -385,8 +398,11 @@ function generatePixelCreature(description: string, targetSize: number = 64, aiC
   const palette = getColorPalette(description, seed, aiColors);
   const rand = (offset: number) => (seed + offset) % 100;
   
-  // 根据描述和随机数选择形状类型
-  const shapeType = rand(10) % 4;
+  // 增强随机性 - 使用时间戳让每次生成都不同
+  const timeBasedRand = (offset: number) => (seed + offset + Date.now()) % 100;
+  
+  // 根据描述和随机数选择形状类型 - 使用时间戳增加随机性
+  const shapeType = timeBasedRand(10) % 4;
   
   // 创建像素数据数组 (32x32)
   const pixels: string[][] = Array(pixelRes).fill(null).map(() => Array(pixelRes).fill('transparent'));
@@ -934,10 +950,27 @@ export async function generateCreatureOffline(
     for (let i = 0; i < quantity; i++) {
       // 为每个变体添加随机时间戳和索引,确保每次都不同
       const randomSeed = Date.now() + Math.random() * 10000 + i * 1000;
-      const variantDesc = `${description}_${randomSeed}`;
+      const variantDesc = `${description}_${randomSeed}_variant${i}`;
+      
+      // 如果有AI颜色,使用AI颜色;否则让每个变体生成完全不同的随机颜色
+      let variantColors = aiColors;
+      if (!aiColors) {
+        // 为每个变体生成独特的随机配色方案
+        const hue = (i * 90 + Math.floor(Math.random() * 60)) % 360; // 每个变体相隔90度色相
+        const saturation = 60 + Math.floor(Math.random() * 30);
+        const lightness = 45 + Math.floor(Math.random() * 20);
+        variantColors = [
+          `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+          `hsl(${hue}, ${saturation + 10}%, ${lightness - 20}%)`,
+          `hsl(${hue}, ${saturation + 15}%, ${lightness + 25}%)`,
+          `hsl(${(hue + 30) % 360}, ${saturation}%, ${lightness + 10}%)`,
+          `hsl(${hue}, ${saturation}%, 15%)`
+        ];
+        console.log(`🎨 变体${i + 1}随机配色: 色相${hue}°`);
+      }
       
       try {
-        const img = generatePixelCreature(variantDesc, size, aiColors);
+        const img = generatePixelCreature(variantDesc, size, variantColors);
         images.push(img);
         console.log(`✅ 图片 ${i + 1}/${quantity} 生成成功`);
       } catch (imgError) {

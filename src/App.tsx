@@ -108,6 +108,16 @@ export default function App() {
         console.log('📦 收到的数据:', result);
         console.log('📦 图片数组长度:', result.images.length);
         console.log('📦 音频数组长度:', result.audios?.length || 0);
+        console.log('🤖 AI增强状态:', result.aiEnhanced ? '✅ 已启用' : '❌ 未启用(使用本地生成器)');
+        console.log('🔧 生成方法:', result.method);
+        
+        // 在控制台显示醒目的AI状态
+        if (result.aiEnhanced) {
+          console.log('%c🎉 AI增强模式已激活! 每个变体有独特的AI配色', 'background: #4CAF50; color: white; font-size: 14px; padding: 5px 10px; border-radius: 3px;');
+        } else {
+          console.log('%c⚠️ 使用本地生成器 (AI未配置或不可用)', 'background: #FF9800; color: white; font-size: 14px; padding: 5px 10px; border-radius: 3px;');
+        }
+        
         setGeneratedImages(result.images); // 设置图片
         setGeneratedAudios(result.audios || []); // 设置音频
         setIsCompleted(true);
