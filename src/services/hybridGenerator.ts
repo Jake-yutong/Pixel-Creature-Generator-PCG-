@@ -98,10 +98,10 @@ async function generateWithAIVariations(
     const variation = variations[i];
     
     // 使用AI提供的描述和颜色信息生成
-    const enhancedDesc = `${variation.description} ${variation.personality} ${variation.colors.join(' ')}`;
+    const enhancedDesc = `${variation.name} ${variation.description} ${variation.personality}`;
     
-    // 调用本地生成器,但使用AI增强的描述
-    const result = await generateCreatureOffline(enhancedDesc, pixelSize, 1);
+    // 调用本地生成器,传递AI的颜色方案
+    const result = await generateCreatureOffline(enhancedDesc, pixelSize, 1, variation.colors);
     
     if (result.success && result.images.length > 0) {
       images.push(result.images[0]);

@@ -12,9 +12,25 @@ function simpleHash(str: string): number {
 }
 
 // 根据关键词选择颜色方案(参考素材)
-function getColorPalette(description: string, seed: number): any {
+// 如果提供aiColors,优先使用AI生成的颜色
+function getColorPalette(description: string, seed: number, aiColors?: string[]): any {
   const desc = description.toLowerCase();
   const rand = (offset: number) => (seed + offset) % 100;
+  
+  // 如果有AI颜色,优先使用
+  if (aiColors && aiColors.length >= 3) {
+    console.log('🎨 使用AI颜色方案:', aiColors);
+    return {
+      main: aiColors[0] || '#FF6B6B',
+      dark: aiColors[1] || '#C44444',
+      light: aiColors[2] || '#FFB3B3',
+      accent: aiColors[3] || aiColors[0],
+      outline: aiColors[4] || '#2a1810',
+      white: '#ffffff',
+      black: '#000000',
+      eyeHighlight: '#ffffff'
+    };
+  }
   
   // 根据描述选择基础色系
   let palette: any;
@@ -352,7 +368,7 @@ function drawPixel(ctx: CanvasRenderingContext2D, x: number, y: number, color: s
 }
 
 // 生成像素生物图像 - 真正的像素艺术版
-function generatePixelCreature(description: string, targetSize: number = 64): string {
+function generatePixelCreature(description: string, targetSize: number = 64, aiColors?: string[]): string {
   // 使用更小的画布来创建像素效果,然后放大
   const pixelRes = 32; // 32x32像素分辨率
   const pixelSize = Math.ceil(targetSize / pixelRes);
@@ -366,7 +382,7 @@ function generatePixelCreature(description: string, targetSize: number = 64): st
   ctx.imageSmoothingEnabled = false;
   
   const seed = simpleHash(description);
-  const palette = getColorPalette(description, seed);
+  const palette = getColorPalette(description, seed, aiColors);
   const rand = (offset: number) => (seed + offset) % 100;
   
   // 根据描述和随机数选择形状类型
@@ -904,7 +920,8 @@ async function generateAudio(description: string): Promise<string> {
 export async function generateCreatureOffline(
   description: string,
   pixelSize: string = '32px',
-  quantity: number = 4
+  quantity: number = 4,
+  aiColors?: string[]
 ): Promise<any> {
   console.log('🎨 使用增强版前端生成器(真实音频+随机性):', description);
   
@@ -920,7 +937,7 @@ export async function generateCreatureOffline(
       const variantDesc = `${description}_${randomSeed}`;
       
       try {
-        const img = generatePixelCreature(variantDesc, size);
+        const img = generatePixelCreature(variantDesc, size, aiColors);
         images.push(img);
         console.log(`✅ 图片 ${i + 1}/${quantity} 生成成功`);
       } catch (imgError) {
