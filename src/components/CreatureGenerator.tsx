@@ -152,8 +152,8 @@ export function CreatureGenerator({
           {/* Tick marks */}
           <div className="absolute top-1/2 -translate-y-1/2 w-full h-[2px] pointer-events-none" style={{ backgroundColor: colors.border }}>
             <div className="relative w-full h-full flex justify-between items-end">
-              {Array.from({ length: 8 }).map((_, i) => {
-                const tickPosition = (i / 7) * 7 + 1;
+              {Array.from({ length: 4 }).map((_, i) => {
+                const tickPosition = i + 1; // 1, 2, 3, 4
                 const currentPosition = quantity;
                 const distance = Math.abs(tickPosition - currentPosition);
                 
@@ -177,7 +177,7 @@ export function CreatureGenerator({
                 const color = `rgb(${r}, ${g}, ${b})`;
                 
                 // Height based on proximity
-                const isActive = distance < 8;
+                const isActive = distance < 1;
                 const height = isActive ? 12 : 6;
                 
                 return (
