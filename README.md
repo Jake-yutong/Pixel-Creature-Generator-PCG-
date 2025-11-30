@@ -1,58 +1,58 @@
 
   # Pixel Creature Generator (PCG)
 
-一个基于 AI 的像素风格生物生成器，让你轻松创建独特的像素艺术生物。
+An AI-powered pixel art creature generator that helps you create unique pixel art creatures effortlessly.
 
-## 🌐 在线体验
+## 🌐 Live Demo
 
-访问：[https://jake-yutong.github.io/Pixel-Creature-Generator-PCG-/](https://jake-yutong.github.io/Pixel-Creature-Generator-PCG-/)
+Visit: [https://jake-yutong.github.io/Pixel-Creature-Generator-PCG-/](https://jake-yutong.github.io/Pixel-Creature-Generator-PCG-/)
 
-## 📸 功能演示
+## 📸 Screenshots
 
-### 主界面
-![主界面](./screenshots/Main%20Interfacev.png)
+### Main Interface
+![Main Interface](./screenshots/Main%20Interfacev.png)
 
-### 生成结果
-![生成结果](./screenshots/Generate%20results.png)
+### Generation Results
+![Generation Results](./screenshots/Generate%20results.png)
 
-### 收藏管理
-![收藏管理](./screenshots/Favorites.png)
+### Favorites Management
+![Favorites Management](./screenshots/Favorites.png)
 
-### 明亮主题
-![明亮主题](./screenshots/Light%20Theme.png)
+### Light Theme
+![Light Theme](./screenshots/Light%20Theme.png)
 
-## ✨ 主要功能
+## ✨ Features
 
-- **🎨 AI 生物生成**：通过文字描述生成独特的像素生物（如"史莱姆怪物，发光的眼睛，3个角"）
-- **🖼️ 参考图片上传**：上传参考图片辅助生成更精准的生物设计
-- **📐 像素尺寸选择**：支持 32px、64px、128px 三种像素尺寸
-- **🔢 批量生成**：一次生成 1-100 个生物，高效创作
-- **❤️ 收藏管理**：收藏喜欢的生物，随时查看和管理
-- **🎯 生成控制**：支持暂停、继续和重新生成功能
-- **🌓 主题切换**：支持明暗两种主题模式
-- **💾 资源导出**：下载生成的像素生物图片
+- **🎨 AI Creature Generation**: Generate unique pixel creatures from text descriptions (e.g., "slime monster, glowing eyes, 3 horns")
+- **🖼️ Reference Image Upload**: Upload reference images to guide creature design generation
+- **📐 Pixel Size Options**: Support for 32px, 64px, and 128px pixel sizes
+- **🔢 Batch Generation**: Generate 1-100 creatures at once for efficient creation
+- **❤️ Favorites Management**: Save and manage your favorite creatures
+- **🎯 Generation Control**: Pause, resume, and regenerate functionality
+- **🌓 Theme Toggle**: Support for both dark and light theme modes
+- **💾 Asset Export**: Download generated pixel creature images
 
-## 🚀 本地运行
+## 🚀 Getting Started
 
-安装依赖：
+Install dependencies:
 
 ```bash
 npm i
 ```
 
-启动开发服务器：
+Start development server:
 
 ```bash
 npm run dev
 ```
 
-构建生产版本：
+Build for production:
 
 ```bash
 npm run build
 ```
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
 - React + TypeScript
 - Vite
@@ -62,5 +62,5 @@ npm run build
 
 ## 📄 License
 
-本项目基于 Figma 设计稿开发，原始设计：[Minimalist Desktop UI Screen](https://www.figma.com/design/S4lXoOURyPTZKvCn6PoMz0/Minimalist-Desktop-UI-Screen)
+This project is based on a Figma design. Original design: [Minimalist Desktop UI Screen](https://www.figma.com/design/S4lXoOURyPTZKvCn6PoMz0/Minimalist-Desktop-UI-Screen)
   
