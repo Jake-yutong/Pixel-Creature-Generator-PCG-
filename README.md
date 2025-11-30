@@ -1,11 +1,66 @@
 
-  # Minimalist Desktop UI Screen
+  # Pixel Creature Generator (PCG)
 
-  This is a code bundle for Minimalist Desktop UI Screen. The original project is available at https://www.figma.com/design/S4lXoOURyPTZKvCn6PoMz0/Minimalist-Desktop-UI-Screen.
+一个基于 AI 的像素风格生物生成器，让你轻松创建独特的像素艺术生物。
 
-  ## Running the code
+## 🌐 在线体验
 
-  Run `npm i` to install the dependencies.
+访问：[https://jake-yutong.github.io/Pixel-Creature-Generator-PCG-/](https://jake-yutong.github.io/Pixel-Creature-Generator-PCG-/)
 
-  Run `npm run dev` to start the development server.
+## 📸 功能演示
+
+### 主界面
+![主界面](./screenshots/Main%20Interfacev.png)
+
+### 生成结果
+![生成结果](./screenshots/Generate%20results.png)
+
+### 收藏管理
+![收藏管理](./screenshots/Favorites.png)
+
+### 明亮主题
+![明亮主题](./screenshots/Light%20Theme.png)
+
+## ✨ 主要功能
+
+- **🎨 AI 生物生成**：通过文字描述生成独特的像素生物（如"史莱姆怪物，发光的眼睛，3个角"）
+- **🖼️ 参考图片上传**：上传参考图片辅助生成更精准的生物设计
+- **📐 像素尺寸选择**：支持 32px、64px、128px 三种像素尺寸
+- **🔢 批量生成**：一次生成 1-100 个生物，高效创作
+- **❤️ 收藏管理**：收藏喜欢的生物，随时查看和管理
+- **🎯 生成控制**：支持暂停、继续和重新生成功能
+- **🌓 主题切换**：支持明暗两种主题模式
+- **💾 资源导出**：下载生成的像素生物图片
+
+## 🚀 本地运行
+
+安装依赖：
+
+```bash
+npm i
+```
+
+启动开发服务器：
+
+```bash
+npm run dev
+```
+
+构建生产版本：
+
+```bash
+npm run build
+```
+
+## 🛠️ 技术栈
+
+- React + TypeScript
+- Vite
+- Tailwind CSS
+- Radix UI
+- Lucide Icons
+
+## 📄 License
+
+本项目基于 Figma 设计稿开发，原始设计：[Minimalist Desktop UI Screen](https://www.figma.com/design/S4lXoOURyPTZKvCn6PoMz0/Minimalist-Desktop-UI-Screen)
   
